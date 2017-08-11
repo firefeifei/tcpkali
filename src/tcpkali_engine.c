@@ -2535,6 +2535,12 @@ process_WRITE:
             return;
         }
 
+        if(conn->latency.connection_initiated < 1) {
+            conn->latency.connection_initiated = tk_now(TK_A);
+        }
+        if(tk_now(TK_A) - conn->latency.connection_initiated < largs->params.delay_send) {
+            return;
+        }
         do { /* Write de-coalescing loop */
             size_t available_write =
                 available_header

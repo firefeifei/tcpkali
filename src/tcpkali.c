@@ -75,6 +75,7 @@ static struct option cli_long_options[] = {
     {"connections", 1, 0, 'c'},
     {"connect-rate", 1, 0, 'R'},
     {"connect-timeout", 1, 0, CLI_CONN_OFFSET + 't'},
+    {"delay-send", 1, 0, 'Z'},
     {"duration", 1, 0, 'T'},
     {"dump-one", 0, 0, CLI_DUMP + '1'},
     {"dump-one-in", 0, 0, CLI_DUMP + 'i'},
@@ -208,7 +209,8 @@ main(int argc, char **argv) {
                                           .connect_timeout = 1.0,
                                           .channel_lifetime = INFINITY,
                                           .nagle_setting = NSET_UNSET,
-                                          .write_combine = WRCOMB_ON};
+                                          .write_combine = WRCOMB_ON,
+                                          .delay_send = 0.0};
     struct rate_modulator rate_modulator = {.state = RM_UNMODULATED};
     int unescape_message_data = 0;
 
@@ -226,7 +228,7 @@ main(int argc, char **argv) {
         char *option = argv[optind];
         int longindex = -1;
         int c;
-        c = getopt_long(argc, argv, "dhc:e1:m:f:r:l:vw:T:H:", cli_long_options,
+        c = getopt_long(argc, argv, "dhc:e1:m:f:r:l:vw:T:H:Z:", cli_long_options,
                         &longindex);
         if(c == -1) break;
         switch(c) {
@@ -346,6 +348,11 @@ main(int argc, char **argv) {
             if(conf.test_duration == -1) {
                 conf.test_duration = INFINITY;
             }
+            break;
+        case 'Z':
+            engine_params.delay_send = parse_with_multipliers(
+                option, optarg, s_multiplier,
+                sizeof(s_multiplier) / sizeof(s_multiplier[0]));
             break;
         case 'e':
             unescape_message_data = 1;
